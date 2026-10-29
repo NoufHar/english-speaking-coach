@@ -1,0 +1,2 @@
+id,configuration,prompt,expected_tool,observed_tool,observed_args,response_text,passed,reason,error
+M07,A,"I consent to saving feedback. Save my interview feedback: good clarity, grammar 80.",save_session_feedback,save_session_feedback,"[{""mode"": ""interview"", ""feedback"": ""good clarity"", ""scores"": {""grammar"": 80}}]",,True,correct_feedback,

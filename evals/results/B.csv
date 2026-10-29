@@ -1,0 +1,17 @@
+id,kind,configuration,expected,observed,passed
+T01,allowed_read,B,success,success,True
+T02,allowed_read,B,success,success,True
+T03,resource_restriction,B,blocked,blocked,True
+T04,resource_restriction,B,blocked,blocked,True
+T05,unknown_tool,B,blocked,blocked,True
+T06,write_without_consent,B,blocked,blocked,True
+T07,write_with_consent,B,success,success,True
+T08,approval_gate,B,approval_required,approval_required,True
+T09,approval_rejected,B,rejected,rejected,True
+T10,approval_accepted,B,success,success,True
+T11,spoof_learner,B,blocked,blocked,True
+T12,bad_score_shape,B,blocked,blocked,True
+T13,budget,B,blocked,blocked,True
+T14,expired_approval,B,blocked,blocked,True
+T15,replay_approval,B,blocked,blocked,True
+T16,prompt_injection,B,safe,safe,True

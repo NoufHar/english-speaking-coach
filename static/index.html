@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI English Speaking Coach</title>
+<style>
+:root{font-family:Inter,system-ui,Arial,sans-serif;color:#17233b;background:#eef3fa}body{margin:0;padding:36px 16px}.wrap{max-width:780px;margin:auto;background:white;padding:30px;border-radius:20px;box-shadow:0 12px 40px #13294b16}h1{margin:0 0 8px}.muted{color:#66738b}input[type=text]{padding:12px;border:1px solid #cad4e4;border-radius:10px;width:100%;box-sizing:border-box;margin:7px 0 15px}button{border:0;background:#2655dc;color:white;padding:12px 18px;border-radius:10px;cursor:pointer;margin:6px 6px 6px 0}button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#697b98}.status{background:#eaf0ff;border-radius:10px;padding:12px;margin:18px 0}.log{background:#f7f9fd;border-radius:12px;padding:15px;min-height:200px;max-height:400px;overflow:auto;white-space:pre-wrap;line-height:1.6}.approval{display:none;background:#fff4dc;padding:16px;border-radius:12px;margin-top:18px}.message{padding:7px 0;border-bottom:1px solid #e8edf4}.label{font-weight:650}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🎙️ AI English Speaking Coach</h1>
+<p class="muted">Realtime English interviews and speaking practice</p>
+<label class="label" for="name">Your name</label><input id="name" type="text" value="Demo Learner" maxlength="80">
+<label class="label" for="goal">Your goal</label><input id="goal" type="text" value="Practice software engineering interviews" maxlength="300">
+<label><input type="checkbox" id="consent"> Allow saving feedback to my learning profile</label>
+<div><button id="start">Start voice session</button><button id="stop" class="secondary" disabled>Stop</button></div>
+<div class="status" id="status">Ready</div>
+<h3>Conversation</h3><div id="log" class="log" aria-live="polite"></div>
+<div id="approval" class="approval"><strong>Approve learning plan change?</strong><p id="proposal"></p><button id="approve">Approve</button><button id="reject" class="secondary">Reject</button></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let ws=null,mic=null,inputContext=null,outputContext=null,source=null,processor=null,mutedNode=null,playbackAt=0,scheduled=[],approvalId=null,learnerId=null,partialCoach=null;
+const status=text=>$('status').textContent=text;
+function append(role,text){const item=document.createElement('div');item.className='message';const label=document.createElement('strong');label.textContent=role+': ';item.append(label,document.createTextNode(text));$('log').appendChild(item);$('log').scrollTop=$('log').scrollHeight;return item}
+function encode(buffer){const bytes=new Uint8Array(buffer);let out='';for(let i=0;i<bytes.length;i+=8192){out+=String.fromCharCode(...bytes.subarray(i,i+8192))}return btoa(out)}
+function decode(base64){const raw=atob(base64);const bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);return bytes}
+function interrupt(){for(const node of scheduled){try{node.stop()}catch{}}scheduled=[];playbackAt=outputContext?.currentTime||0}
+function play(base64){if(!outputContext)return;const bytes=decode(base64);const view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);const audio=outputContext.createBuffer(1,Math.floor(bytes.byteLength/2),24000);const samples=audio.getChannelData(0);for(let i=0;i<samples.length;i++)samples[i]=view.getInt16(i*2,true)/32768;const node=outputContext.createBufferSource();node.buffer=audio;node.connect(outputContext.destination);playbackAt=Math.max(playbackAt,outputContext.currentTime+.03);node.start(playbackAt);playbackAt+=audio.duration;scheduled.push(node);node.onended=()=>scheduled=scheduled.filter(item=>item!==node)}
+async function startMic(){mic=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});inputContext=new AudioContext({sampleRate:24000});if(inputContext.sampleRate!==24000)throw Error('This browser cannot capture at 24000 Hz');await inputContext.audioWorklet.addModule('/audio-worklet.js');source=inputContext.createMediaStreamSource(mic);processor=new AudioWorkletNode(inputContext,'microphone-processor');mutedNode=inputContext.createGain();mutedNode.gain.value=0;source.connect(processor);processor.connect(mutedNode);mutedNode.connect(inputContext.destination);processor.port.onmessage=event=>{if(ws?.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:'audio',audio:encode(event.data)}))}}
+async function start(){try{$('start').disabled=true;status('Preparing microphone...');await startMic();outputContext=new AudioContext({sampleRate:24000});await outputContext.resume();const stored=sessionStorage.getItem('coachLearnerId');if(stored){learnerId=stored}else{const response=await fetch('/learners',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('name').value,goal:$('goal').value})});if(!response.ok)throw Error('Could not create learner');learnerId=(await response.json()).learner_id;sessionStorage.setItem('coachLearnerId',learnerId)}const protocol=location.protocol==='https:'?'wss':'ws';ws=new WebSocket(`${protocol}://${location.host}/ws/${learnerId}`);ws.onopen=()=>{ws.send(JSON.stringify({type:'consent',approved:$('consent').checked}));status('Connecting to voice model...')};ws.onmessage=event=>{const msg=JSON.parse(event.data);if(msg.type==='ready'){status('Listening — speak English!');$('stop').disabled=false}else if(msg.type==='audio')play(msg.audio);else if(msg.type==='interrupt')interrupt();else if(msg.type==='learner_text')append('You',msg.text);else if(msg.type==='coach_text_delta'){if(!partialCoach)partialCoach=append('Coach','');partialCoach.append(document.createTextNode(msg.text))}else if(msg.type==='approval_required'){approvalId=msg.approval_id;$('proposal').textContent=msg.proposal;$('approval').style.display='block'}else if(msg.type==='error')status('Error: '+msg.message)};ws.onclose=()=>stop();ws.onerror=()=>status('WebSocket connection error')}catch(error){status('Error: '+error.message);await stop()}}
+async function stop(){if(ws){const old=ws;ws=null;if(old.readyState===WebSocket.OPEN)old.close()}interrupt();if(processor){processor.disconnect();processor=null}if(source){source.disconnect();source=null}if(mutedNode){mutedNode.disconnect();mutedNode=null}if(mic){mic.getTracks().forEach(track=>track.stop());mic=null}if(inputContext){await inputContext.close();inputContext=null}if(outputContext){await outputContext.close();outputContext=null}partialCoach=null;$('start').disabled=false;$('stop').disabled=true;status('Stopped')}
+function approve(accepted){if(ws?.readyState===WebSocket.OPEN&&approvalId)ws.send(JSON.stringify({type:'approval',approval_id:approvalId,approved:accepted}));approvalId=null;$('approval').style.display='none'}
+$('start').onclick=start;$('stop').onclick=stop;$('approve').onclick=()=>approve(true);$('reject').onclick=()=>approve(false);$('consent').onchange=()=>{if(ws?.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:'consent',approved:$('consent').checked}))};
+</script>
+</body>
+</html>

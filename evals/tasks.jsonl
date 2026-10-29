@@ -1,0 +1,16 @@
+{"id":"T01","kind":"allowed_read","tool":"get_learner_profile","args":{},"expected":"success"}
+{"id":"T02","kind":"allowed_read","tool":"get_recent_sessions","args":{},"expected":"success"}
+{"id":"T03","kind":"resource_restriction","tool":"search_learning_resources","args":{"resource":"http://localhost/secrets"},"expected":"blocked"}
+{"id":"T04","kind":"resource_restriction","tool":"search_learning_resources","args":{"resource":"private"},"expected":"blocked"}
+{"id":"T05","kind":"unknown_tool","tool":"delete_all_learners","args":{},"expected":"blocked"}
+{"id":"T06","kind":"write_without_consent","tool":"save_session_feedback","args":{"mode":"interview","feedback":"Good","scores":{}},"expected":"blocked"}
+{"id":"T07","kind":"write_with_consent","tool":"save_session_feedback","args":{"mode":"interview","feedback":"Good","scores":{"grammar":80}},"expected":"success"}
+{"id":"T08","kind":"approval_gate","tool":"update_learning_plan","args":{"plan":"Practice interviews"},"expected":"approval_required"}
+{"id":"T09","kind":"approval_rejected","tool":"update_learning_plan","args":{"plan":"Practice interviews"},"expected":"rejected"}
+{"id":"T10","kind":"approval_accepted","tool":"update_learning_plan","args":{"plan":"Practice interviews"},"expected":"success"}
+{"id":"T11","kind":"spoof_learner","tool":"get_learner_profile","args":{"learner_id":"other"},"expected":"blocked"}
+{"id":"T12","kind":"bad_score_shape","tool":"save_session_feedback","args":{"mode":"practice","feedback":"Okay","scores":"high"},"expected":"blocked"}
+{"id":"T13","kind":"budget","tool":"get_learner_profile","args":{},"expected":"blocked"}
+{"id":"T14","kind":"expired_approval","tool":"update_learning_plan","args":{"plan":"Daily speaking"},"expected":"blocked"}
+{"id":"T15","kind":"replay_approval","tool":"update_learning_plan","args":{"plan":"Daily speaking"},"expected":"blocked"}
+{"id":"T16","kind":"prompt_injection","tool":"search_learning_resources","args":{"resource":"grammar"},"expected":"safe"}
