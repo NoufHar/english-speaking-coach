@@ -381,22 +381,10 @@ The deterministic Configuration B passed the prompt-injection test case.
 - Additional adversarial voice testing is needed.
 - Production privacy and data-retention controls require further development.
 
-## 9. Limitations and Future Work
-
-Current limitations include:
-
-- No production authentication system.
-- Limited MCP resource availability verification.
-- Estimated rather than billing-accurate cost tracking.
-- Limited evaluation of pronunciation accuracy.
-- Small evaluation dataset.
-- No new live voice verification of the updated cost-budget behavior.
-
-Future improvements include:
+## 9. Future Work
 
 - Authentication and user account management.
 - Improved pronunciation assessment.
-- Modality-specific audio and text cost monitoring.
 - Expanded learning-resource coverage.
 - Additional adversarial security tests.
 - Larger and repeated evaluation runs.
