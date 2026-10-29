@@ -1,5 +1,5 @@
-
-# Evaluation Report — AI English Speaking Coach
+﻿
+# Evaluation Report â€” AI English Speaking Coach
 
 ## 1. Evaluation Objectives
 
@@ -46,11 +46,11 @@ The failures in Configuration A reflect its intentionally restricted tool access
 
 **Number of cases:** 16
 
-### Configuration A — Baseline
+### Configuration A â€” Baseline
 
 Uses general English coaching instructions with tool access.
 
-### Configuration B — Enhanced
+### Configuration B â€” Enhanced
 
 Uses explicit instructions covering:
 
@@ -128,7 +128,7 @@ Run:
 uv run python -m pytest tests -q
 ```
 
-**Latest local result: 16/16 passed.**
+**Latest local result: 19/19 passed.**
 
 The suite includes:
 
@@ -143,7 +143,7 @@ The additional cost-budget tests cover:
 - Rejection of invalid token usage.
 - Realtime session termination when the estimated cost limit is reached.
 
-All 16 tests passed in the latest local run.
+All 19 tests passed in the latest local run.
 
 ### MCP Connectivity
 

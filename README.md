@@ -1,4 +1,4 @@
-
+﻿
 # AI English Speaking Coach
 
 Name: Nouf Alharthi
@@ -87,7 +87,7 @@ Open:
 uv run python -m pytest tests -q
 ```
 
-Latest local result: **16 passed**.
+Latest local result: **19 passed**.
 
 ### Run Deterministic Evaluation
 
@@ -122,8 +122,8 @@ The latest saved results were:
 
 | Configuration | Passed | Pass Rate |
 |---|---:|---:|
-| A — Baseline | 12/16 | 75% |
-| B — Enhanced | 16/16 | 100% |
+| A â€” Baseline | 12/16 | 75% |
+| B â€” Enhanced | 16/16 | 100% |
 
 Three baseline failures were API errors. Therefore, the observed difference cannot be attributed entirely to enhanced instructions.
 
@@ -257,8 +257,8 @@ A total of 16 test cases evaluate tool permissions, argument validation, consent
 
 | Configuration | Passed | Success Rate |
 |---|---:|---:|
-| A — Tools Disabled | 9/16 | 56.25% |
-| B — Guarded Harness | 16/16 | 100% |
+| A â€” Tools Disabled | 9/16 | 56.25% |
+| B â€” Guarded Harness | 16/16 | 100% |
 
 Configuration A intentionally disables tool execution. Its failures reflect the limitations of that baseline.
 
@@ -274,8 +274,8 @@ Configuration B adds explicit coaching, tool usage, approval, feedback accuracy,
 
 | Configuration | Passed | Success Rate |
 |---|---:|---:|
-| A — Baseline | 12/16 | 75% |
-| B — Enhanced | 16/16 | 100% |
+| A â€” Baseline | 12/16 | 75% |
+| B â€” Enhanced | 16/16 | 100% |
 
 **Observed pass-rate difference: 25 percentage points.**
 
@@ -287,7 +287,7 @@ See `evals/results/model/20261029_102948/error_analysis.md`.
 
 ### Additional Tests
 
-- Pytest: 16/16 passed.
+- Pytest: 19/19 passed.
 - Original harness and security tests: 12 passed.
 - Additional cost-budget tests: 4 passed.
 - MCP connectivity: 1/1 passed in the last reported check.
@@ -450,3 +450,4 @@ The project includes enforced tool permissions, human approval, execution budget
 The latest local tests passed 16/16 cases, and the guarded deterministic configuration passed 16/16 evaluation cases.
 
 These results support the effectiveness of the design on the tested scenarios while highlighting the need for live voice cost-budget verification and broader production testing.
+

@@ -45,20 +45,26 @@ class RealtimeCoach:
         self.started = time.monotonic()
         self.seen_calls = set()
 
-        # Estimated USD per million tokens
         self.input_rate = float(
             os.getenv("REALTIME_INPUT_USD_PER_1M", "32")
         )
         self.output_rate = float(
             os.getenv("REALTIME_OUTPUT_USD_PER_1M", "64")
         )
+
         self.cost_exhausted = False
 
     async def send_openai(self, upstream, payload):
         async with self.outgoing_lock:
             await upstream.send(json.dumps(payload))
 
-    async def tool_output(self, upstream, call_id, result):
+    async def tool_output(
+        self,
+        upstream,
+        call_id,
+        result,
+        create_response=True,
+    ):
         await self.send_openai(
             upstream,
             {
@@ -71,20 +77,26 @@ class RealtimeCoach:
             },
         )
 
-        if not self.cost_exhausted:
+        if create_response and not self.cost_exhausted:
             await self.send_openai(
                 upstream,
                 {"type": "response.create"},
             )
 
-    async def handle_call(self, event, upstream, browser):
+    async def handle_call(
+        self,
+        event,
+        upstream,
+        browser,
+        create_response=True,
+    ):
         if self.cost_exhausted:
-            return
+            return False
 
         call_id = event.get("call_id")
 
         if not call_id or call_id in self.seen_calls:
-            return
+            return False
 
         self.seen_calls.add(call_id)
 
@@ -120,12 +132,16 @@ class RealtimeCoach:
                 }
             )
 
-        else:
-            await self.tool_output(
-                upstream,
-                call_id,
-                result,
-            )
+            return False
+
+        await self.tool_output(
+            upstream,
+            call_id,
+            result,
+            create_response=create_response,
+        )
+
+        return True
 
     async def initialize_session(
         self,
@@ -335,11 +351,10 @@ class RealtimeCoach:
                 )
 
             elif kind == "response.function_call_arguments.done":
-                await self.handle_call(
-                    event,
-                    upstream,
-                    browser,
-                )
+                # Do not execute the tool yet.
+                # First wait for response.done so that
+                # usage is charged before tool execution.
+                continue
 
             elif kind == "response.done":
                 response = event.get("response", {})
@@ -390,13 +405,31 @@ class RealtimeCoach:
                     )
                     return
 
+                # All tool calls are handled only after
+                # the response cost has been recorded.
+                completed = False
+
                 for item in response.get("output", []):
                     if item.get("type") == "function_call":
-                        await self.handle_call(
+                        sent = await self.handle_call(
                             item,
                             upstream,
                             browser,
+                            create_response=False,
                         )
+                        completed = completed or sent
+
+                # Request only one follow-up response,
+                # even when multiple tools are called.
+                if (
+                    completed
+                    and not self.pending_calls
+                    and not self.cost_exhausted
+                ):
+                    await self.send_openai(
+                        upstream,
+                        {"type": "response.create"},
+                    )
 
             elif kind == "error":
                 error = event.get("error", {})

@@ -1,5 +1,5 @@
-
-# Agent Specification — AI English Speaking Coach
+﻿
+# Agent Specification â€” AI English Speaking Coach
 
 ## Agent Role
 
@@ -184,7 +184,7 @@ The application also monitors estimated cost during Realtime processing and stop
 
 The latest local test results were:
 
-- Unit and security tests, including cost-budget tests: 16/16 passed.
+- Unit, security, cost-budget, and realtime tool-order tests: 19/19 passed.
 - Deterministic evaluation Configuration A: 9/16 passed.
 - Deterministic evaluation Configuration B: 16/16 passed.
 - Live-model evaluation Configuration A: 12/16 passed.

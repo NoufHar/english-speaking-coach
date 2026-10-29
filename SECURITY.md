@@ -1,5 +1,5 @@
-
-# Security Documentation — AI English Speaking Coach
+﻿
+# Security Documentation â€” AI English Speaking Coach
 
 ## 1. Security Overview
 
@@ -109,9 +109,9 @@ The most recent reported results were:
 
 | Test | Result |
 |---|---|
-| Pytest suite, including cost-budget tests | 16/16 |
-| Deterministic harness — B | 16/16 |
-| Live-model evaluation — B | 16/16 |
+| Pytest suite, including cost-budget and realtime tool-order tests | 19/19 |
+| Deterministic harness â€” B | 16/16 |
+| Live-model evaluation â€” B | 16/16 |
 | Real MCP connectivity | 1/1 |
 
 These results cover the defined tests and do not prove comprehensive security against all possible attacks.
